@@ -4,8 +4,9 @@ Embedding Service - Handle sentence embeddings dan similarity
 
 from sentence_transformers import SentenceTransformer
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -15,15 +16,34 @@ class EmbeddingService:
     
     def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
         """
-        Inisialisasi EmbeddingService dengan model
+        Inisialisasi EmbeddingService dengan model (lazy loading untuk Vercel)
         
         Args:
             model_name: Nama model dari Hugging Face
         """
-        logger.info(f"Loading model: {model_name}")
-        self.model = SentenceTransformer(model_name)
         self.model_name = model_name
-        logger.info("Model loaded successfully")
+        self._model: Optional[SentenceTransformer] = None
+        logger.info(f"EmbeddingService initialized (model: {model_name})")
+        # Model akan di-load saat pertama kali digunakan (lazy loading)
+    
+    @property
+    def model(self) -> SentenceTransformer:
+        """
+        Lazy load model - hanya load saat pertama kali digunakan
+        Ini membantu mengurangi cold start time di Vercel
+        """
+        if self._model is None:
+            logger.info(f"Loading model: {self.model_name}")
+            # Set cache directory untuk Vercel (/tmp)
+            cache_dir = os.environ.get("TRANSFORMERS_CACHE", "/tmp/.cache")
+            os.makedirs(cache_dir, exist_ok=True)
+            
+            self._model = SentenceTransformer(
+                self.model_name,
+                cache_folder=cache_dir
+            )
+            logger.info("Model loaded successfully")
+        return self._model
     
     def encode(self, texts: List[str]) -> np.ndarray:
         """

@@ -1,0 +1,34 @@
+# Ignore files yang tidak perlu untuk Vercel build
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+.env.local
+*.log
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation (optional, bisa di-include jika perlu)
+# *.md
+# docs/
+
+# Test files
+test_*.py
+*_test.py
+tests/
+
